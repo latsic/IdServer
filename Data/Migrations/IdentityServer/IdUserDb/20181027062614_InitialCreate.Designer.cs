@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IdServer.Data.Migrations.IdentityServer.IdUserDb
 {
     [DbContext(typeof(IdUserDbContext))]
-    [Migration("20181019084737_InitialCreate")]
+    [Migration("20181027062614_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,8 +27,6 @@ namespace IdServer.Data.Migrations.IdentityServer.IdUserDb
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken();
-
-                    b.Property<string>("CustomProp");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256);
@@ -50,8 +48,6 @@ namespace IdServer.Data.Migrations.IdentityServer.IdUserDb
                     b.Property<string>("PhoneNumber");
 
                     b.Property<bool>("PhoneNumberConfirmed");
-
-                    b.Property<string>("SecondCustomProp");
 
                     b.Property<string>("SecurityStamp");
 

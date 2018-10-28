@@ -21,6 +21,8 @@ using System.Threading.Tasks;
 
 using Latsic.IdServer.Models;
 using Latsic.IdServer.UI;
+using Latsic.IdServer.Services;
+using Latsic.IdServer.Constants;
 
 namespace IdentityServer4.Quickstart.UI
 {
@@ -40,6 +42,8 @@ namespace IdentityServer4.Quickstart.UI
     private readonly UserManager<IdUser> _userManager;
     private readonly SignInManager<IdUser> _signInManager;
     private readonly ILogger _logger;
+    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly ICookieHandlerFactory _cookieHandlerFactory;
 
     public AccountController(
         IIdentityServerInteractionService interaction,
@@ -48,7 +52,9 @@ namespace IdentityServer4.Quickstart.UI
         IEventService events,
         UserManager<IdUser> userManager,
         SignInManager<IdUser> signInManager,
-        ILogger logger)
+        IHttpContextAccessor httpContextAccessor,
+        ICookieHandlerFactory cookieHandlerFactory,
+        ILogger<AccountController> logger)
     {
       // if the TestUserStore is not in DI, then we'll just use the global users collection
       // this is where you would plug in your own custom identity management library (e.g. ASP.NET Identity)
@@ -60,6 +66,8 @@ namespace IdentityServer4.Quickstart.UI
       _userManager = userManager;
       _events = events;
       _signInManager = signInManager;
+      _httpContextAccessor = httpContextAccessor;
+      _cookieHandlerFactory = cookieHandlerFactory;
       _logger = logger;
     }
 
@@ -69,11 +77,7 @@ namespace IdentityServer4.Quickstart.UI
     [HttpGet]
     public IActionResult Register(/*string returnUrl*/)
     {
-
-      return View(new RegisterViewModel
-      {
-
-      });
+      return View(new RegisterViewModel{});
     }
 
     [HttpPost]
@@ -115,7 +119,8 @@ namespace IdentityServer4.Quickstart.UI
     public async Task<IActionResult> Login(string returnUrl)
     {
       // build a model so we know what to show on the login page
-      var vm = await BuildLoginViewModelAsync(returnUrl);
+      var vm = await BuildLoginViewModelAsync(
+        returnUrl, _cookieHandlerFactory.CreateInstance(_httpContextAccessor));
 
       if (vm.IsExternalLoginOnly)
       {
@@ -169,9 +174,14 @@ namespace IdentityServer4.Quickstart.UI
 
         if (result.Succeeded)
         {
+          var cookieHandler = _cookieHandlerFactory.CreateInstance(_httpContextAccessor);
+          cookieHandler.SetBoolValue(Cookies.cookieKeyRememberLogin, model.RememberLogin);
+          cookieHandler.Commit();
+          
           //var user = _users.FindByUsername(model.Username);
           // await _events.RaiseAsync(new UserLoginSuccessEvent(user.Username, user.SubjectId, user.Username));
           var user = await _userManager.FindByNameAsync(model.Username);
+
           await _events.RaiseAsync(new UserLoginSuccessEvent(user.UserName, user.Id, user.UserName));
 
           // only set explicit expiration here if user chooses "remember me". 
@@ -224,7 +234,7 @@ namespace IdentityServer4.Quickstart.UI
       }
 
       // something went wrong, show form with error
-      var vm = await BuildLoginViewModelAsync(model);
+      var vm = await BuildLoginViewModelAsync(model, null);
       return View(vm);
     }
 
@@ -287,8 +297,13 @@ namespace IdentityServer4.Quickstart.UI
     /*****************************************/
     /* helper APIs for the AccountController */
     /*****************************************/
-    private async Task<LoginViewModel> BuildLoginViewModelAsync(string returnUrl)
+    private async Task<LoginViewModel> BuildLoginViewModelAsync(
+      string returnUrl, ICookieHandler cookieHandler)
     {
+      var rememberLogin = cookieHandler != null
+        ? cookieHandler.GetBoolValue(Cookies.cookieKeyRememberLogin)
+        : false;
+
       var context = await _interaction.GetAuthorizationContextAsync(returnUrl);
       if (context?.IdP != null)
       {
@@ -332,6 +347,7 @@ namespace IdentityServer4.Quickstart.UI
       return new LoginViewModel
       {
         AllowRememberLogin = AccountOptions.AllowRememberLogin,
+        RememberLogin = rememberLogin,
         EnableLocalLogin = allowLocal && AccountOptions.AllowLocalLogin,
         ReturnUrl = returnUrl,
         Username = context?.LoginHint,
@@ -339,9 +355,10 @@ namespace IdentityServer4.Quickstart.UI
       };
     }
 
-    private async Task<LoginViewModel> BuildLoginViewModelAsync(LoginInputModel model)
+    private async Task<LoginViewModel> BuildLoginViewModelAsync(
+      LoginInputModel model, ICookieHandler cookieHandler)
     {
-      var vm = await BuildLoginViewModelAsync(model.ReturnUrl);
+      var vm = await BuildLoginViewModelAsync(model.ReturnUrl, cookieHandler);
       vm.Username = model.Username;
       vm.RememberLogin = model.RememberLogin;
       return vm;

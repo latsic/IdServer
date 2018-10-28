@@ -13,6 +13,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Formatters.Json;
+using Microsoft.Extensions.Logging;
 
 using IdentityServer4;
 using IdentityServer4.EntityFramework.Mappers;
@@ -23,22 +25,32 @@ using IdentityServer4.EntityFramework.DbContexts;
 using Latsic.IdServer.Configuration;
 using Latsic.IdServer.Data;
 using Latsic.IdServer.Models;
+using Latsic.IdServer.Middleware;
+using Latsic.IdServer.Services;
 
 namespace Latsic.IdServer
 {
   public class Startup
   {
-    public Startup(IConfiguration configuration)
+    public Startup(IConfiguration configuration, ILogger<Startup> logger)
     {
       Configuration = configuration;
+      _logger = logger;
     }
 
+    private readonly ILogger<Startup> _logger;
     public IConfiguration Configuration { get; }
 
     // This method gets called by the runtime. Use this method to add services to the container.
     // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
     public void ConfigureServices(IServiceCollection services)
     {
+      services.AddCors(options => {
+        options.AddPolicy("AllowAllOrigins", builder => {
+          builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+        });
+      });
+
       services.AddDbContext<IdUserDbContext>(options =>
         options.UseSqlite(Configuration.GetConnectionString("IdUserDb")));
 
@@ -49,16 +61,31 @@ namespace Latsic.IdServer
       services.Configure<ExternalProviders>(externalProviders);
 
       services.AddAutoMapper();
+      services.AddSingleton<ICookieHandlerFactory, CookieHandlerFactory>();
 
       services.AddIdentity<IdUser, IdentityRole>()
         .AddEntityFrameworkStores<IdUserDbContext>()
         .AddDefaultTokenProviders();
 
-      services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+      services.AddMvc()
+      .AddJsonOptions(options => {
+        options.SerializerSettings.Error = 
+          (object sender, Newtonsoft.Json.Serialization.ErrorEventArgs args) =>
+          {
+            _logger.LogError("json serialisationerror", args);
+
+              //Log args.ErrorContext.Error details...
+          };
+      })
+      .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
      
       var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
 
-      services.AddIdentityServer()
+      services.AddIdentityServer(options => {
+        options.Authentication.CookieSlidingExpiration = true;
+        options.Authentication.CookieLifetime = new TimeSpan(20, 0, 0, 0);
+        
+      })
       .AddDeveloperSigningCredential()
       .AddAspNetIdentity<IdUser>()
       .AddConfigurationStore(options =>
@@ -102,11 +129,18 @@ namespace Latsic.IdServer
         app.UseDeveloperExceptionPage();
       }
 
-      InitializeDatabase(app);
+      app.UseCors("AllowAllOrigins");
+
+      // call dbContext.DataBase.Migrate() to ensure all database are created.
+
+      InitializeDbIdServer(app);
+      InitializeDbIdUser(app);
 
       app.UseStaticFiles();
       app.UseIdentityServer();
       //app.UseMvcWithDefaultRoute();
+
+      app.UseMiddleware<RequestResponseLogging>();
 
       app.UseMvc(routes =>
       {
@@ -114,7 +148,16 @@ namespace Latsic.IdServer
       });
     }
 
-    private void InitializeDatabase(IApplicationBuilder app)
+    private void InitializeDbIdUser(IApplicationBuilder app)
+    {
+      using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
+      {
+        var idUserDbContext =  serviceScope.ServiceProvider.GetRequiredService<IdUserDbContext>();
+        idUserDbContext.Database.Migrate();
+      }
+    }
+
+    private void InitializeDbIdServer(IApplicationBuilder app)
     {
       using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
       {
@@ -160,6 +203,7 @@ namespace Latsic.IdServer
             context.ApiResources.Add(apiResouce.ToEntity());
           }
         }
+        context.SaveChanges();
       }
     }
   }

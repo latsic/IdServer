@@ -26,8 +26,6 @@ namespace IdServer.Data.Migrations.IdentityServer.IdUserDb
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken();
 
-                    b.Property<string>("CustomProp");
-
                     b.Property<string>("Email")
                         .HasMaxLength(256);
 
@@ -48,8 +46,6 @@ namespace IdServer.Data.Migrations.IdentityServer.IdUserDb
                     b.Property<string>("PhoneNumber");
 
                     b.Property<bool>("PhoneNumberConfirmed");
-
-                    b.Property<string>("SecondCustomProp");
 
                     b.Property<string>("SecurityStamp");
 

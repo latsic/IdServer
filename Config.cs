@@ -1,3 +1,4 @@
+using IdentityModel;
 using IdentityServer4;
 using IdentityServer4.Models;
 using System.Collections.Generic;
@@ -41,7 +42,26 @@ namespace Latsic.IdServer
     {
       return new List<ApiResource>
       {
-          new ApiResource("api1", "My API")
+          new ApiResource("api1", "My API"),
+
+          new ApiResource
+          {
+            Name = "IdApi1",
+            DisplayName = "A Test API",
+
+            Scopes =
+            {
+              new Scope
+              {
+                Name = "IdApi1",
+                DisplayName = "A Test API",
+              }
+            },
+
+            UserClaims = new[] {JwtClaimTypes.BirthDate, ClaimTypes.Role, "UserNumber"}
+          }
+
+          // new ApiResource("IdApi1", "A Test API")
       };
     }
 
@@ -102,25 +122,37 @@ namespace Latsic.IdServer
           AllowedGrantTypes = GrantTypes.Implicit,
           AllowAccessTokensViaBrowser = true,
 
-          RedirectUris =           { "http://localhost:8003/callback.html" },
-          PostLogoutRedirectUris = { "http://localhost:8003/index.html" },
-          AllowedCorsOrigins =     { "http://localhost:8003" },
+          RedirectUris =           { "http://localhost:8080/callback.html", "http://localhost:8080/silent-renew.html" },
+          PostLogoutRedirectUris = { "http://localhost:8080/index.html" },
+          AllowedCorsOrigins =     { "http://localhost:8080" },
+
+          IdentityTokenLifetime = 100, // seconds
+          AccessTokenLifetime = 100, // seconds
 
           AllowedScopes =
           {
               IdentityServerConstants.StandardScopes.OpenId,
               IdentityServerConstants.StandardScopes.Profile,
-              "api1"
+              "api1",
+              "IdApi1",
+              "custom.profile"
           }
         }
       };
     }
     public static IEnumerable<IdentityResource> GetIdentityResources()
     {
+      var customProfile = new IdentityResource(
+        name: "custom.profile",
+        displayName: "Custom profile",
+        claimTypes: new[] { JwtClaimTypes.Email, JwtClaimTypes.BirthDate, JwtClaimTypes.Role, "UserNumber" });
+      
+
       return new List<IdentityResource>
       {
         new IdentityResources.OpenId(),
-        new IdentityResources.Profile()
+        new IdentityResources.Profile(),
+        customProfile
       };
     }
   }

@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Cors;
 
 using Latsic.IdServer.Models.TransferObjects;
 using Latsic.IdServer.Models;
@@ -35,6 +36,7 @@ namespace Latsic.IdServer.Controllers
     }
 
     [HttpPost]
+    [EnableCors("AllowAllOrigins")]
     [ProducesResponseType(201)]
     [ProducesResponseType(400)]
     [ProducesResponseType(409)]
@@ -85,6 +87,20 @@ namespace Latsic.IdServer.Controllers
           if(name.Count() > 0) name += " " + userDtoOut.LastName;
           else name += userDtoIn.LastName;
         }
+        if(!string.IsNullOrWhiteSpace(userDtoIn.DateOfBirth))
+        {
+          claims.Add(new Claim(JwtClaimTypes.BirthDate, userDtoIn.DateOfBirth));
+          userDtoOut.DateOfBirth = userDtoIn.DateOfBirth;
+        }
+        if(!string.IsNullOrWhiteSpace(userDtoIn.Role))
+        {
+          claims.Add(new Claim(ClaimTypes.Role, userDtoIn.Role));
+          userDtoOut.Role = userDtoIn.Role;
+        }
+        claims.Add(new Claim("UserNumber", userDtoIn.UserNumber.ToString()));
+        userDtoOut.UserNumber = userDtoIn.UserNumber;
+        
+
         if(userDtoIn.UserName != userDtoIn.EMail)
         {
           name = userDtoIn.UserName;
