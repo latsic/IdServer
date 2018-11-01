@@ -76,13 +76,13 @@ namespace Latsic.IdServer.Controllers
         
         if(!string.IsNullOrWhiteSpace(userDtoIn.FirstName))
         {
-          claims.Add(new Claim(ClaimTypes.GivenName, userDtoIn.FirstName));
+          claims.Add(new Claim(JwtClaimTypes.GivenName, userDtoIn.FirstName));
           userDtoOut.FirstName = userDtoIn.FirstName;
           name += userDtoIn.FirstName;
         }
         if(!string.IsNullOrWhiteSpace(userDtoIn.LastName))
         {
-          claims.Add(new Claim(ClaimTypes.Surname, userDtoIn.LastName));
+          claims.Add(new Claim(JwtClaimTypes.FamilyName, userDtoIn.LastName));
           userDtoOut.LastName = userDtoIn.LastName;
           if(name.Count() > 0) name += " " + userDtoOut.LastName;
           else name += userDtoIn.LastName;
@@ -94,7 +94,7 @@ namespace Latsic.IdServer.Controllers
         }
         if(!string.IsNullOrWhiteSpace(userDtoIn.Role))
         {
-          claims.Add(new Claim(ClaimTypes.Role, userDtoIn.Role));
+          claims.Add(new Claim(JwtClaimTypes.Role, userDtoIn.Role));
           userDtoOut.Role = userDtoIn.Role;
         }
         claims.Add(new Claim("UserNumber", userDtoIn.UserNumber.ToString()));

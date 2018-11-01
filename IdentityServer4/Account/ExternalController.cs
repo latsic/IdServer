@@ -265,16 +265,6 @@ namespace Host.Quickstart.Account
         }
         else
         {
-          // if(claim.Type == ClaimTypes.Email || claim.Type == GoogleClaimTypeEmail)
-          // {
-          //     user.Email = claim.Value;
-          //     user.NormalizedEmail = claim.Value;
-          // }
-          // if(claim.Type == ClaimTypes.MobilePhone)
-          // {
-          //     user.PhoneNumber = claim.Value;
-          // }
-
           claimsToUse.Add(claim);
         }
       }

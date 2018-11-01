@@ -184,31 +184,46 @@ namespace IdentityServer4.Quickstart.UI
 
           await _events.RaiseAsync(new UserLoginSuccessEvent(user.UserName, user.Id, user.UserName));
 
-          // only set explicit expiration here if user chooses "remember me". 
-          // otherwise we rely upon expiration configured in cookie middleware.
-          AuthenticationProperties props = null;
-          if (AccountOptions.AllowRememberLogin && model.RememberLogin)
-          {
-            props = new AuthenticationProperties
-            {
-              IsPersistent = true,
-              ExpiresUtc = DateTimeOffset.UtcNow.Add(AccountOptions.RememberMeLoginDuration)
-            };
-          };
+          // // only set explicit expiration here if user chooses "remember me". 
+          // // otherwise we rely upon expiration configured in cookie middleware.
+          // AuthenticationProperties props = null;
+          // if (AccountOptions.AllowRememberLogin && model.RememberLogin)
+          // {
+          //   props = new AuthenticationProperties
+          //   {
+          //     IsPersistent = true,
+          //     ExpiresUtc = DateTimeOffset.UtcNow.Add(AccountOptions.RememberMeLoginDuration)
+          //   };
+          // };
 
-          // issue authentication cookie with subject ID and username
-          // await HttpContext.SignInAsync(user.SubjectId, user.Username, props);
-          await HttpContext.SignInAsync(user.Id, user.UserName, props);
+          // // issue authentication cookie with subject ID and username
+          // // await HttpContext.SignInAsync(user.SubjectId, user.Username, props);
+          // await HttpContext.SignInAsync(user.Id, user.UserName, props);
 
           if (context != null)
           {
+            // make sure the returnUrl is still valid, and if so redirect back to authorize endpoint or a local page
+            // the IsLocalUrl check is only necessary if you want to support additional local pages, otherwise IsValidReturnUrl is more strict
+            bool returnUrlValid = _interaction.IsValidReturnUrl(model.ReturnUrl) || Url.IsLocalUrl(model.ReturnUrl);
+
             if (await _clientStore.IsPkceClientAsync(context.ClientId))
             {
               // if the client is PKCE then we assume it's native, so this change in how to
               // return the response is for better UX for the end user.
-              return View("Redirect", new RedirectViewModel { RedirectUrl = model.ReturnUrl });
+              //if(returnUrlValid)
+              //{
+                return View("Redirect", new RedirectViewModel { RedirectUrl = model.ReturnUrl });
+              //}
+              //return View("Redirect", new RedirectViewModel { RedirectUrl = "~/" });
             }
 
+            //if(returnUrlValid)
+            //{
+            //  // we can trust model.ReturnUrl since GetAuthorizationContextAsync returned non-null
+            //  return Redirect(model.ReturnUrl);
+            //}
+            //return Redirect("~/");
+            
             // we can trust model.ReturnUrl since GetAuthorizationContextAsync returned non-null
             return Redirect(model.ReturnUrl);
           }

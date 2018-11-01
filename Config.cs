@@ -9,35 +9,6 @@ namespace Latsic.IdServer
 {
   public class Config
   {
-    // public static List<TestUser> GetUsers()
-    // {
-    //   return new List<TestUser>
-    //   {
-    //     new TestUser
-    //     {
-    //         SubjectId = "1",
-    //         Username = "alice",
-    //         Password = "password",
-    //         Claims = new List<Claim>
-    //         {
-    //           new Claim("name", "Alice"),
-    //           new Claim("website", "https://alice.com")
-    //         }
-    //     },
-    //     new TestUser
-    //     {
-    //         SubjectId = "2",
-    //         Username = "bob",
-    //         Password = "password",
-    //         Claims = new List<Claim>
-    //         {
-    //           new Claim("name", "Bob"),
-    //           new Claim("website", "https://bob.com")
-    //         }
-    //     }
-    //   };
-    // }
-
     public static IEnumerable<ApiResource> GetApiResources()
     {
       return new List<ApiResource>
@@ -58,10 +29,8 @@ namespace Latsic.IdServer
               }
             },
 
-            UserClaims = new[] {JwtClaimTypes.BirthDate, ClaimTypes.Role, "UserNumber"}
+            UserClaims = new[] {JwtClaimTypes.BirthDate, JwtClaimTypes.Role, "UserNumber"}
           }
-
-          // new ApiResource("IdApi1", "A Test API")
       };
     }
 
@@ -121,6 +90,7 @@ namespace Latsic.IdServer
           ClientName = "JavaScript Client",
           AllowedGrantTypes = GrantTypes.Implicit,
           AllowAccessTokensViaBrowser = true,
+          //AlwaysIncludeUserClaimsInIdToken = true,
 
           RedirectUris =           { "http://localhost:8080/callback.html", "http://localhost:8080/silent-renew.html" },
           PostLogoutRedirectUris = { "http://localhost:8080/index.html" },
@@ -133,7 +103,6 @@ namespace Latsic.IdServer
           {
               IdentityServerConstants.StandardScopes.OpenId,
               IdentityServerConstants.StandardScopes.Profile,
-              "api1",
               "IdApi1",
               "custom.profile"
           }
@@ -144,9 +113,8 @@ namespace Latsic.IdServer
     {
       var customProfile = new IdentityResource(
         name: "custom.profile",
-        displayName: "Custom profile",
-        claimTypes: new[] { JwtClaimTypes.Email, JwtClaimTypes.BirthDate, JwtClaimTypes.Role, "UserNumber" });
-      
+        displayName: "email, role and user number",
+        claimTypes: new[] { JwtClaimTypes.Email, JwtClaimTypes.Role, "UserNumber" });
 
       return new List<IdentityResource>
       {
