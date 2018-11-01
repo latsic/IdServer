@@ -13,7 +13,7 @@ There is also an <a href="https://github.com/latsic/vue_oidc_client">Vue SPA cli
 
 ### Prerequisites
 
-* [AspNetCore](ttps://www.microsoft.com/net/download/dotnet-core/2.1) - Asp.net Core
+* [AspNetCore](https://www.microsoft.com/net/download/dotnet-core/2.1) - Asp.net Core
 
 ### Installing
 
