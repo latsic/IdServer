@@ -36,7 +36,7 @@ namespace Latsic.IdServer.Controllers
     }
 
     [HttpPost]
-    [EnableCors("AllowAllOrigins")]
+    [EnableCors("AllowSomeOrigins")]
     [ProducesResponseType(201)]
     [ProducesResponseType(400)]
     [ProducesResponseType(409)]
@@ -97,9 +97,11 @@ namespace Latsic.IdServer.Controllers
           claims.Add(new Claim(JwtClaimTypes.Role, userDtoIn.Role));
           userDtoOut.Role = userDtoIn.Role;
         }
-        claims.Add(new Claim("UserNumber", userDtoIn.UserNumber.ToString()));
+        claims.Add(new Claim(CustomClaims.UserNumber, userDtoIn.UserNumber.ToString()));
         userDtoOut.UserNumber = userDtoIn.UserNumber;
         
+        // Add claim to access to IdApi1 for all users per default.
+        claims.Add(new Claim(CustomClaims.ApiAccess, "IdApi1"));
 
         if(userDtoIn.UserName != userDtoIn.EMail)
         {

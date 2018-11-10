@@ -271,5 +271,8 @@ __pycache__/
 # Cake - Uncomment if you are using it
 # tools/
 
+# Production certificates
+Certificates/prod/
+
 
 # End of https://www.gitignore.io/api/aspnetcore

@@ -30,8 +30,9 @@ namespace IdentityServer4.Quickstart.UI
         // only show in development
         return View();
       }
-
-      return NotFound();
+      return View();
+      //return Redirect("~/.well-known/openid-configuration");
+      //return NotFound();
     }
 
     /// <summary>
