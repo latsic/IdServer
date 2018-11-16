@@ -212,7 +212,7 @@ namespace Latsic.IdServer
       app.UseCors("AllowSomeOrigins");
 
       InitializeDbIdServer(app, webClients);
-      InitializeDbIdUser(app);
+      //InitializeDbIdUser(app);
 
       app.UseStaticFiles();
       app.UseIdentityServer();
@@ -228,14 +228,14 @@ namespace Latsic.IdServer
       });
     }
 
-    private void InitializeDbIdUser(IApplicationBuilder app)
-    {
-      using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
-      {
-        var idUserDbContext = serviceScope.ServiceProvider.GetRequiredService<IdUserDbContext>();
-        idUserDbContext.Database.Migrate();
-      }
-    }
+    // private void InitializeDbIdUser(IApplicationBuilder app)
+    // {
+    //   using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
+    //   {
+    //     var idUserDbContext = serviceScope.ServiceProvider.GetRequiredService<IdUserDbContext>();
+    //     idUserDbContext.Database.Migrate();
+    //   }
+    // }
 
     private void InitializeDbIdServer(IApplicationBuilder app, IOptions<WebClients> webClients)
     {
