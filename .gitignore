@@ -198,7 +198,7 @@ ClientBin/
 *.dbmdl
 *.dbproj.schemaview
 *.jfm
-*.pfx
+#*.pfx
 *.publishsettings
 node_modules/
 orleans.codegen.cs
@@ -272,7 +272,10 @@ __pycache__/
 # tools/
 
 # Production certificates
-Certificates/prod/
+**/Certificates/prod/
+
+# Database files
+*.db
 
 
 # End of https://www.gitignore.io/api/aspnetcore
