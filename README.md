@@ -1,6 +1,6 @@
 # Authentication Server
 
-This repo has been created to learn and educate myself about OAuth2 and OpenId Connect. It is an authentication server which uses Asp.net core and Identity Server 4 to provide features like Single Sign-on, login with external providers and secured access to API and Identity resources.
+This repo has been created to learn and educate myself about OAuth2 and OpenId Connect. It contains an authentication server which uses Asp.net core and Identity Server 4 to provide features like Single Sign-on, login with external providers and secured access to API and Identity resources. Also contained in this repo is a seperate application (webapi) to register and manage users as well as other settings.
 
 There is also an <a href="https://github.com/latsic/vue_oidc_client">Vue SPA client</a> and a <a href="https://github.com/latsic/idApi1">webapi</a> which can be used to test the functionality of this server.
 
