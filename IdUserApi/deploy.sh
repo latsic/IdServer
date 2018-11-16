@@ -1,7 +1,7 @@
 #!/bin/bash
 
 processName="IdUserApi.dll"
-targetFolderPath="/home/office/www_office/webapps/idserver/IdUserApi/"
+targetFolderPath="/home/office/www_office/webapps/idserver/iduserapi/"
 sshLogin="office@latsic.com"
 
 doStartProcess="0"
